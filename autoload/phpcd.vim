@@ -1161,4 +1161,15 @@ function! phpcd#GetCallChainReturnTypeAt(line) " {{{
 	return classname
 endfunction " }}}
 
+function! phpcd#Loc()
+	let l = line('.') 
+	let c = col('.')
+	let [path, line] = rpc#request(g:phpcd_channel_id, 'loc', expand('%:p'), getline(1, l), l-1, c - 1)
+	if strlen(path) > 0
+		silent! execute 'e +'.line.' '.path
+	endif
+	silent! normal! zz
+	silent! normal! zv
+endfunction
+
 " vim: foldmethod=marker:noexpandtab:ts=2:sts=2:sw=2

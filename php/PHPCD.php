@@ -613,4 +613,79 @@ class PHPCD implements RpcHandler
 
         return $namespaces;
     }
+
+    public function loc($path, $lines, $l, $c)
+    {
+        $context = new Context($path, $l, $c, $lines);
+        $inst = $context->getInst();
+        // $inst_parts = preg_split('/([^:]+::|[^->]+->)/', $inst, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+        $inst_parts = preg_split('/::|->/', $inst);
+        $obj = array_shift($inst_parts);
+        return $this->loc0($context, $obj, $inst_parts);
+    }
+
+    private function loc0($context, $class, $parts)
+    {
+        $class_name = $this->getClassName($class, $context);
+
+        $part = array_shift($parts);
+        $part = rtrim($part, '()');
+
+        if (count($parts) == 0) {
+            return $this->location($class_name, $part);
+        } else {
+            $class = $this->functype($class_name, $part);
+            // TODO show select menu
+            return $this->loc0($context->getPath(), "\\".$class[0], $parts);
+        }
+    }
+
+    private function getClassName($class, $context)
+    {
+        $path = $context->getPath();
+        if ($this->isSelf($class)) {
+            $nsuse = $this->nsuse($path);
+            $name = $nsuse['namespace']."\\".$nsuse['class'];
+        } elseif ($this->isVar($class)) {
+            // TODO
+        } elseif ($this->isGlobalFuncCall($class)) {
+            $name = rtrim($class, '()');
+            $types = $this->functype('', $name);
+            // todo show select menu
+            $name = $types[0];
+        } elseif ($this->isClass($class)) {
+            if ($class[0] != "\\") {
+                $nsuse = $this->nsuse($path);
+                if (isset($nsuse['imports'][$class])) {
+                    $name = $nsuse['imports'][$class];
+                } else {
+                    $name = $nsuse['namespace']."\\".$class;
+                }
+            } else {
+                $name = $class;
+            }
+        }
+
+        return $name;
+    }
+
+    private function isSelf($name)
+    {
+        return in_array(strtolower($name), ['$this', 'static', 'self']);
+    }
+
+    private function isVar($name)
+    {
+        return $name[0] == '$';
+    }
+
+    private function isGlobalFuncCall($name)
+    {
+        return preg_match('/[A-Za-z][^)]+\)$/', $name);
+    }
+
+    private function isClass($name)
+    {
+        return preg_match('/[A-Za-z][^()]*/', $name);
+    }
 }

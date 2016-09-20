@@ -12,7 +12,8 @@
     "require": {
         "psr/log": "^1.0",
         "lvht/msgpack-rpc": "^0.1",
-        "monolog/monolog": "^1.20"
+        "monolog/monolog": "^1.20",
+        "symfony/var-dumper": "^3.1"
     },
     "config": {
       "classmap-authoritative": true
