@@ -36,6 +36,7 @@ PHPCD consists of two parts. On part is written in VimL (mainly based on phpcomp
  2. [PCNTL](http://php.net/manual/en/book.pcntl.php) Extension
  3. [Msgpack 0.5.7+(for NeoVim)](https://github.com/msgpack/msgpack-php) Extension or [JSON(for Vim 7.4+)](http://php.net/manual/en/intro.json.php) Extension
  4. ~~[Composer](https://getcomposer.org/) Project~~
+ 5. [PDO_SQLITE](http://php.net/manual/en/ref.pdo-sqlite.php)
 
 
 ### Install PHPCD

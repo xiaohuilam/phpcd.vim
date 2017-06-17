@@ -4,6 +4,7 @@ namespace PHPCD;
 use Psr\Log\LoggerInterface as Logger;
 use Lvht\MsgpackRpc\Server as RpcServer;
 use Lvht\MsgpackRpc\Handler as RpcHandler;
+use Lvht\Key\Key;
 
 class PHPID implements RpcHandler
 {
@@ -19,6 +20,11 @@ class PHPID implements RpcHandler
 
     private $root;
 
+    /**
+     * @var Key
+     */
+    private $db;
+
     private $class_path = [];
     private $class_path_count = 0;
 
@@ -26,6 +32,7 @@ class PHPID implements RpcHandler
     {
         $this->root = $root;
         $this->logger = $logger;
+        $this->db = Key::new($root.'/.phpcd.db');
     }
 
     public function setServer(RpcServer $server)
@@ -66,19 +73,8 @@ class PHPID implements RpcHandler
     {
         $base_path = $is_abstract_class ? $this->getIntefacesDir()
             : $this->getExtendsDir();
-        $path = $base_path . '/' . $this->getIndexFileName($name);
-        if (!is_file($path)) {
-            return [];
-        }
-
-        $list = json_decode(file_get_contents($path));
-        if (!is_array($list)) {
-            return [];
-        }
-
-        sort($list);
-
-        return $list;
+        $path = $base_path . $this->getIndexFileName($name);
+        return (array) $this->db->get($path);
     }
 
     /**
@@ -89,8 +85,6 @@ class PHPID implements RpcHandler
      */
     public function index()
     {
-        $this->initIndexDir();
-
         exec('composer dump-autoload -o -d ' . $this->root . ' 2>&1 >/dev/null');
         $class_path = require $this->root
             . '/vendor/composer/autoload_classmap.php';
@@ -125,32 +119,14 @@ class PHPID implements RpcHandler
         $this->vimCloseProgressBar();
     }
 
-    private function getIndexDir()
-    {
-        return $this->root . '/.phpcd';
-    }
-
     private function getIntefacesDir()
     {
-        return $this->getIndexDir() . '/interfaces';
+        return 'i:';
     }
 
     private function getExtendsDir()
     {
-        return $this->getIndexDir() . '/extends';
-    }
-
-    private function initIndexDir()
-    {
-        $extends_dir = $this->getExtendsDir();
-        if (!is_dir($extends_dir)) {
-            mkdir($extends_dir, 0700, true);
-        }
-
-        $interfaces_dir = $this->getIntefacesDir();
-        if (!is_dir($interfaces_dir)) {
-            mkdir($interfaces_dir, 0700, true);
-        }
+        return 'e:';
     }
 
     private function _index()
@@ -159,45 +135,35 @@ class PHPID implements RpcHandler
             $this->vimUpdateProgressBar();
             list($class_name, $file_path) = $this->class_path[$this->class_path_count];
 
-            require $file_path;
             $this->update($class_name);
         }
     }
 
     private function updateParentIndex($parent, $child)
     {
-        $index_file = $this->getExtendsDir() . '/' . $this->getIndexFileName($parent);
+        $index_file = $this->getExtendsDir() . $this->getIndexFileName($parent);
         $this->saveChild($index_file, $child);
     }
 
     private function updateInterfaceIndex($interface, $implementation)
     {
-        $index_file = $this->getIntefacesDir() . '/' . $this->getIndexFileName($interface);
+        $index_file = $this->getIntefacesDir() . $this->getIndexFileName($interface);
         $this->saveChild($index_file, $implementation);
     }
 
     private function saveChild($index_file, $child)
     {
-        $index_directory = dirname($index_file);
+        $childs = (array) $this->db->get($index_file);
 
-        if (!is_dir($index_directory)) {
-            mkdir($index_directory, 0755, true);
+        if (!in_array($child, $childs)) {
+            $childs[] = $child;
+            $this->db->set($index_file, $childs);
         }
-
-        if (is_file($index_file)) {
-            $childs = json_decode(file_get_contents($index_file));
-        } else {
-            $childs = [];
-        }
-
-        $childs[] = $child;
-        $childs = array_unique($childs);
-        file_put_contents($index_file, json_encode($childs));
     }
 
     private function getIndexFileName($name)
     {
-        return str_replace("\\", '_', $name);
+        return $name;
     }
 
     private function getClassInfo($name) {
