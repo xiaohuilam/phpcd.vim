@@ -1056,7 +1056,7 @@ class PHPCD implements RpcHandler
                         'Config' => 'Illuminate\Config\Repository',
                         'Cookie' => 'Illuminate\Cookie\CookieJar',
                         'Crypt' => 'Illuminate\Encryption\Encrypter',
-                        'DB' => 'Illuminate\Database\Connection',
+                        'DB' => 'Illuminate\Database\Capsule\Manager',
                         'Event' => 'Illuminate\Events\Dispatcher',
                         'File' => 'Illuminate\Filesystem\Filesystem',
                         'Gate' => 'Illuminate\Contracts\Auth\Access\Gate',
