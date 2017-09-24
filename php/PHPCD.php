@@ -1066,7 +1066,7 @@ class PHPCD implements RpcHandler
                         'Mail' => 'Illuminate\Mail\Mailer',
                         'Notification' => 'Illuminate\Notifications\ChannelManager',
                         'Password' => 'Illuminate\Auth\Passwords\PasswordBrokerManager',
-                        'Queue ' => 'Illuminate\Queue\Queue',
+                        'Queue' => 'Illuminate\Queue\Queue',
                         'Redirect' => 'Illuminate\Routing\Redirector',
                         'Redis' => 'Illuminate\Redis\Database',
                         'Request' => 'Illuminate\Http\Request',
