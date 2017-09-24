@@ -1045,7 +1045,8 @@ class PHPCD implements RpcHandler
                 // 增加 facades 支持
                 if(file_exists($this->root.'/config/app.php')) {
                     $config = require_once($this->root.'/config/app.php');
-                    $aliases = $config['aliases'];
+                    $aliases = isset($config['aliases']) ? $config['aliases'] : [];
+                    if(!is_array($aliases)) $aliases = [];
                     $require = [
                         'App' => 'Illuminate\Foundation\Application',
                         'Artisan' => 'Illuminate\Contracts\Console\Kernel',
@@ -1066,7 +1067,7 @@ class PHPCD implements RpcHandler
                         'Mail' => 'Illuminate\Mail\Mailer',
                         'Notification' => 'Illuminate\Notifications\ChannelManager',
                         'Password' => 'Illuminate\Auth\Passwords\PasswordBrokerManager',
-                        'Queue' => 'Illuminate\Queue\Queue',
+                        'Queue' => 'Illuminate\Queue\Capsule\Manager',
                         'Redirect' => 'Illuminate\Routing\Redirector',
                         'Redis' => 'Illuminate\Redis\Database',
                         'Request' => 'Illuminate\Http\Request',
