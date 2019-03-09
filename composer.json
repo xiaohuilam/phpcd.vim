@@ -14,6 +14,7 @@
         "lvht/msgpack-rpc": "^0.2.1",
         "monolog/monolog": "^1.20",
         "ext-json": "*",
+        "ext-msgpack": "*",
         "roave/better-reflection": "^3.0"
     },
     "config": {
